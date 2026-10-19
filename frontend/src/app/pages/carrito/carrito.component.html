@@ -1,0 +1,51 @@
+<div class="contenedor seccion">
+  <h1>Tu carrito</h1>
+
+  @if (carrito.items().length === 0) {
+    <div class="vacio">
+      <p>Tu carrito está vacío.</p>
+      <a routerLink="/catalogo" class="boton">Explorar el catálogo</a>
+    </div>
+  } @else {
+    <div class="compra">
+      <ul class="lista-carrito">
+        @for (i of carrito.items(); track i.productoId) {
+          <li class="item-carrito">
+            <a [routerLink]="['/producto', i.productoId]" class="item-carrito__imagen">
+              @if (i.imagenUrl | imagen; as src) {
+                <img [src]="src" [alt]="i.nombre" />
+              } @else {
+                <div class="sin-imagen" aria-hidden="true"></div>
+              }
+            </a>
+            <div class="item-carrito__info">
+              <a [routerLink]="['/producto', i.productoId]">{{ i.nombre }}</a>
+              <span>{{ i.precio | soles }} c/u</span>
+            </div>
+            <div class="cantidad" role="group" [attr.aria-label]="'Cantidad de ' + i.nombre">
+              <button type="button" (click)="carrito.cambiarCantidad(i.productoId, i.cantidad - 1)" aria-label="Quitar uno">−</button>
+              <span>{{ i.cantidad }}</span>
+              <button type="button" (click)="carrito.cambiarCantidad(i.productoId, i.cantidad + 1)"
+                      [disabled]="i.cantidad >= i.stock" aria-label="Agregar uno">+</button>
+            </div>
+            <strong class="item-carrito__subtotal">{{ i.precio * i.cantidad | soles }}</strong>
+            <button type="button" class="enlace" (click)="carrito.quitar(i.productoId)">Quitar</button>
+          </li>
+        }
+      </ul>
+
+      <aside class="resumen">
+        <dl>
+          <dt>Op. gravada</dt><dd>{{ base() | soles }}</dd>
+          <dt>IGV (18%)</dt><dd>{{ igv() | soles }}</dd>
+          <dt class="resumen__total">Total</dt><dd class="resumen__total">{{ carrito.total() | soles }}</dd>
+        </dl>
+        <p class="nota">El costo de envío se coordina según tu distrito.</p>
+        <a routerLink="/checkout" class="boton boton--ancho">Continuar con la compra</a>
+        <a [href]="enlaceCotizacion()" target="_blank" rel="noopener" class="boton boton--secundario boton--ancho">
+          Cotizar este carrito por WhatsApp
+        </a>
+      </aside>
+    </div>
+  }
+</div>

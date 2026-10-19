@@ -1,0 +1,56 @@
+<div class="admin__cabecera">
+  <h1>Categorías</h1>
+</div>
+
+<form [formGroup]="form" (ngSubmit)="guardar()" class="formulario formulario--linea" novalidate>
+  <label class="campo">
+    <span>Nombre</span>
+    <input formControlName="nombre" placeholder="Ej. Melamina 18 mm" />
+  </label>
+  <label class="campo">
+    <span>Línea</span>
+    <select formControlName="tipo">
+      @for (t of tipos; track t.valor) { <option [value]="t.valor">{{ t.nombre }}</option> }
+    </select>
+  </label>
+  <label class="campo campo--ancho">
+    <span>Descripción (opcional)</span>
+    <input formControlName="descripcion" />
+  </label>
+  <div class="acciones">
+    <button type="submit" class="boton boton--chico" [disabled]="form.invalid">
+      {{ editando() ? 'Guardar cambios' : 'Agregar categoría' }}
+    </button>
+    @if (editando()) {
+      <button type="button" class="boton boton--secundario boton--chico" (click)="cancelar()">Cancelar</button>
+    }
+  </div>
+</form>
+
+@if (error()) { <p class="alerta alerta--error" role="alert">{{ error() }}</p> }
+
+@for (grupo of porTipo(); track grupo.valor) {
+  <section class="grupo-categorias">
+    <h2>{{ grupo.nombre }}</h2>
+    @if (grupo.items.length === 0) {
+      <p class="estado">Sin categorías en esta línea.</p>
+    } @else {
+      <ul class="lista-simple">
+        @for (c of grupo.items; track c.id) {
+          <li>
+            <div>
+              <strong>{{ c.nombre }}</strong>
+              @if (c.descripcion) { <small class="bloque">{{ c.descripcion }}</small> }
+            </div>
+            <div class="tabla__acciones">
+              <button type="button" class="enlace" (click)="editar(c)">Editar</button>
+              @if (auth.puede('eliminar')) {
+                <button type="button" class="enlace enlace--peligro" (click)="eliminar(c)">Eliminar</button>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+}

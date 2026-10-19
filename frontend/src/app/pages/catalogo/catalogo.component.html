@@ -1,0 +1,79 @@
+<div class="contenedor catalogo">
+  <aside class="filtros" aria-label="Filtros">
+    <fieldset>
+      <legend>Línea</legend>
+      <label class="opcion">
+        <input type="radio" name="tipo" [checked]="!filtros().tipo" (change)="cambiarTipo(null)" /> Todas
+      </label>
+      @for (t of tipos; track t.valor) {
+        <label class="opcion">
+          <input type="radio" name="tipo" [checked]="filtros().tipo === t.valor" (change)="cambiarTipo(t.valor)" />
+          {{ t.nombre }}
+        </label>
+      }
+    </fieldset>
+
+    <label class="campo">
+      <span>Categoría</span>
+      <select [ngModel]="filtros().categoriaId ?? ''" (ngModelChange)="aplicar({ categoriaId: $event })">
+        <option value="">Todas</option>
+        @for (c of categoriasDelTipo(); track c.id) {
+          <option [value]="c.id">{{ c.nombre }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="campo">
+      <span>Ordenar por</span>
+      <select [ngModel]="filtros().sort" (ngModelChange)="aplicar({ sort: $event })">
+        @for (o of orden; track o.valor) {
+          <option [value]="o.valor">{{ o.nombre }}</option>
+        }
+      </select>
+    </label>
+
+    <button type="button" class="enlace" (click)="limpiar()">Quitar filtros</button>
+  </aside>
+
+  <section class="catalogo__resultados">
+    <div class="catalogo__cabecera">
+      <h1>{{ titulo() }}</h1>
+      <form class="buscador" role="search" (ngSubmit)="aplicar({ q: busqueda.trim() })">
+        <input type="search" name="q" [(ngModel)]="busqueda" placeholder="Buscar por nombre, color o código"
+               aria-label="Buscar productos" />
+        <button type="submit" class="boton boton--chico">Buscar</button>
+      </form>
+    </div>
+
+    @if (cargando()) {
+      <p class="estado">Cargando productos…</p>
+    } @else if (error()) {
+      <p class="alerta alerta--error">{{ error() }}</p>
+    } @else {
+      @let r = resultado();
+      @if (r) {
+      @if (r.content.length === 0) {
+        <div class="vacio">
+          <p>No hay productos con estos filtros.</p>
+          <button type="button" class="boton boton--secundario" (click)="limpiar()">Ver todo el catálogo</button>
+        </div>
+      } @else {
+        <p class="estado">{{ r.totalElements }} {{ r.totalElements === 1 ? 'producto' : 'productos' }}</p>
+        <div class="grilla">
+          @for (p of r.content; track p.id) {
+            <app-producto-card [producto]="p" />
+          }
+        </div>
+
+        @if (r.totalPages > 1) {
+          <nav class="paginacion" aria-label="Paginación">
+            <button type="button" class="boton boton--secundario boton--chico" [disabled]="r.page === 0" (click)="irAPagina(r.page - 1)">Anterior</button>
+            <span>Página {{ r.page + 1 }} de {{ r.totalPages }}</span>
+            <button type="button" class="boton boton--secundario boton--chico" [disabled]="r.page + 1 >= r.totalPages" (click)="irAPagina(r.page + 1)">Siguiente</button>
+          </nav>
+        }
+      }
+      }
+    }
+  </section>
+</div>

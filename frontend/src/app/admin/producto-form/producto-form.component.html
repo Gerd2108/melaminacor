@@ -1,0 +1,93 @@
+<div class="admin__cabecera">
+  <h1>{{ esEdicion() ? 'Editar producto' : 'Nuevo producto' }}</h1>
+  <a routerLink="/admin/productos" class="enlace">Volver a productos</a>
+</div>
+
+<form [formGroup]="form" (ngSubmit)="guardar()" class="formulario formulario--admin" novalidate>
+  <fieldset>
+    <legend>Información básica</legend>
+    <label class="campo">
+      <span>Nombre</span>
+      <input formControlName="nombre" placeholder="Ej. Plancha de melamina Roble 18 mm" />
+      @if (form.controls.nombre.invalid && form.controls.nombre.touched) { <small class="error">El nombre es obligatorio.</small> }
+    </label>
+    <div class="campos-2">
+      <label class="campo">
+        <span>Línea</span>
+        <select formControlName="tipo" (change)="alCambiarTipo()">
+          @for (t of tipos; track t.valor) { <option [ngValue]="t.valor">{{ t.nombre }}</option> }
+        </select>
+      </label>
+      <label class="campo">
+        <span>Categoría</span>
+        <select formControlName="categoriaId">
+          <option [ngValue]="null">Sin categoría</option>
+          @for (c of categoriasDelTipo(); track c.id) { <option [ngValue]="c.id">{{ c.nombre }}</option> }
+        </select>
+      </label>
+    </div>
+    <label class="campo">
+      <span>SKU / código interno (opcional)</span>
+      <input formControlName="sku" />
+    </label>
+    <label class="campo">
+      <span>Descripción</span>
+      <textarea formControlName="descripcion" rows="4"></textarea>
+    </label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Precio y stock</legend>
+    <div class="campos-3">
+      <label class="campo">
+        <span>Precio (S/, con IGV)</span>
+        <input formControlName="precio" type="number" step="0.01" min="0" />
+        @if (form.controls.precio.invalid && form.controls.precio.touched) { <small class="error">Ingresa un precio (0 si no tiene costo).</small> }
+      </label>
+      <label class="campo">
+        <span>Precio de oferta (opcional)</span>
+        <input formControlName="precioOferta" type="number" step="0.01" min="0" />
+      </label>
+      <label class="campo">
+        <span>Stock</span>
+        <input formControlName="stock" type="number" step="1" min="0" />
+      </label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Características</legend>
+    <div class="campos-3">
+      <label class="campo"><span>Medidas o unidad</span><input formControlName="medidas" placeholder="2.44 x 2.14 m / Por metro lineal" /></label>
+      <label class="campo"><span>Color / acabado</span><input formControlName="color" placeholder="Roble Santana" /></label>
+      <label class="campo"><span>Espesor</span><input formControlName="espesor" placeholder="18 mm" /></label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Imagen</legend>
+    <div class="subida">
+      @if (imagen() | imagen; as src) {
+        <img [src]="src" alt="Vista previa" class="subida__vista" />
+      }
+      <label class="campo">
+        <span>{{ imagen() ? 'Cambiar imagen' : 'Subir imagen' }} (JPG, PNG o WEBP, máx. 5 MB)</span>
+        <input type="file" accept="image/jpeg,image/png,image/webp" (change)="subirImagen($event)" [disabled]="subiendo()" />
+      </label>
+      @if (subiendo()) { <p class="estado">Subiendo imagen…</p> }
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Publicación</legend>
+    <label class="opcion"><input type="checkbox" formControlName="activo" /> Visible en la tienda</label>
+    <label class="opcion"><input type="checkbox" formControlName="destacado" /> Mostrar en el inicio</label>
+    <label class="opcion"><input type="checkbox" formControlName="soloCotizacion" /> Solo por cotización (recomendado para servicios)</label>
+  </fieldset>
+
+  @if (error()) { <p class="alerta alerta--error" role="alert">{{ error() }}</p> }
+
+  <button type="submit" class="boton" [disabled]="guardando() || subiendo()">
+    {{ guardando() ? 'Guardando…' : esEdicion() ? 'Guardar cambios' : 'Crear producto' }}
+  </button>
+</form>

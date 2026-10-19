@@ -1,0 +1,69 @@
+<div class="admin__cabecera">
+  <h1>Productos</h1>
+  <a routerLink="/admin/productos/nuevo" class="boton">Nuevo producto</a>
+</div>
+
+<form class="admin__filtros" (ngSubmit)="cargar(0)">
+  <input type="search" name="q" [(ngModel)]="q" placeholder="Buscar por nombre, color o SKU" aria-label="Buscar" />
+  <select name="tipo" [(ngModel)]="tipo" (ngModelChange)="cargar(0)" aria-label="Línea">
+    <option value="">Todas las líneas</option>
+    @for (t of tipos; track t.valor) { <option [value]="t.valor">{{ t.nombre }}</option> }
+  </select>
+  <button type="submit" class="boton boton--secundario boton--chico">Buscar</button>
+</form>
+
+@if (error()) { <p class="alerta alerta--error" role="alert">{{ error() }}</p> }
+
+@if (pagina(); as pg) {
+  @if (pg.content.length === 0) {
+    <div class="vacio">
+      <p>Aún no hay productos que coincidan.</p>
+      <a routerLink="/admin/productos/nuevo" class="boton">Crear el primero</a>
+    </div>
+  } @else {
+    <div class="tabla-envoltura">
+      <table class="tabla">
+        <thead>
+          <tr><th></th><th>Producto</th><th>Línea</th><th>Precio</th><th>Stock</th><th>Estado</th><th></th></tr>
+        </thead>
+        <tbody>
+          @for (p of pg.content; track p.id) {
+            <tr>
+              <td class="tabla__miniatura">
+                @if (p.imagenUrl | imagen; as src) { <img [src]="src" alt="" /> }
+              </td>
+              <td>
+                <a [routerLink]="['/admin/productos', p.id]">{{ p.nombre }}</a>
+                @if (p.sku) { <small class="bloque">{{ p.sku }}</small> }
+              </td>
+              <td>{{ nombreTipo(p.tipo) }}@if (p.categoriaNombre) {<small class="bloque">{{ p.categoriaNombre }}</small>}</td>
+              <td>{{ p.precioVigente | soles }}</td>
+              <td [class.texto-alerta]="p.stock === 0">{{ p.stock }}</td>
+              <td>
+                <span class="chip" [class.chip--apagado]="!p.activo">{{ p.activo ? 'Visible' : 'Oculto' }}</span>
+                @if (p.destacado) { <span class="chip">Destacado</span> }
+                @if (p.soloCotizacion) { <span class="chip">Cotización</span> }
+              </td>
+              <td class="tabla__acciones">
+                <a [routerLink]="['/admin/productos', p.id]" class="enlace">Editar</a>
+                @if (auth.puede('eliminar')) {
+                  <button type="button" class="enlace enlace--peligro" (click)="eliminar(p)">Eliminar</button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (pg.totalPages > 1) {
+      <nav class="paginacion" aria-label="Paginación">
+        <button type="button" class="boton boton--secundario boton--chico" [disabled]="pg.page === 0" (click)="cargar(pg.page - 1)">Anterior</button>
+        <span>Página {{ pg.page + 1 }} de {{ pg.totalPages }}</span>
+        <button type="button" class="boton boton--secundario boton--chico" [disabled]="pg.page + 1 >= pg.totalPages" (click)="cargar(pg.page + 1)">Siguiente</button>
+      </nav>
+    }
+  }
+} @else if (!error()) {
+  <p class="estado">Cargando…</p>
+}

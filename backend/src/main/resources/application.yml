@@ -1,0 +1,50 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/melamina}
+    username: ${DB_USER:melamina}
+    password: ${DB_PASSWORD:melamina}
+  jpa:
+    # "update" es cómodo en desarrollo. En producción usa "validate" + Flyway.
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
+
+app:
+  jwt:
+    # Cambia este valor en producción (variable de entorno JWT_SECRET, Base64 de 32+ bytes)
+    secret: ${JWT_SECRET:kFE/5wb79sDn4Ix+SYs7bPyA3S5OYpk3DSjL/QGWo1ALGej6T+J3wdWXzckUUg0X}
+    expiration-ms: 86400000
+  cors:
+    allowed-origins: ${CORS_ORIGINS:http://localhost:4200}
+  uploads:
+    dir: ${UPLOADS_DIR:uploads}
+  admin:
+    email: ${ADMIN_EMAIL:admin@melamincorp.pe}
+    password: ${ADMIN_PASSWORD:Admin123!}
+    nombre: Administrador Melamincorp
+  demo:
+    # Carga productos de muestra al arrancar (no duplica). Pon false cuando subas tus productos reales.
+    cargar: true
+  # Datos del emisor que se copian en cada recibo (cámbialos por los reales)
+  empresa:
+    razon-social: MelaminCorp S.A.C.
+    ruc: "20000000001"
+    direccion: Ate Vitarte, Lima
+    telefono: 999 999 999
+  pagos:
+    # Acepta pagos simulados (sin cobro real) desde la ventana de prueba del frontend.
+    # En producción pon PAGOS_SIMULADOS=false.
+    simulado: ${PAGOS_SIMULADOS:true}
+  culqi:
+    secret-key: ${CULQI_SECRET_KEY:sk_test_REEMPLAZAR}
+    api-url: https://api.culqi.com/v2

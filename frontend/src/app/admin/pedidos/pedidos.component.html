@@ -1,0 +1,95 @@
+<div class="admin__cabecera">
+  <h1>Pedidos</h1>
+  <select [(ngModel)]="filtro" (ngModelChange)="cargar(0)" aria-label="Filtrar por estado">
+    <option value="">Todos los estados</option>
+    @for (e of estados; track e[0]) { <option [value]="e[0]">{{ e[1] }}</option> }
+  </select>
+</div>
+
+@if (error()) { <p class="alerta alerta--error" role="alert">{{ error() }}</p> }
+
+@if (pagina(); as pg) {
+  @if (pg.content.length === 0) {
+    <p class="vacio">No hay pedidos con este estado.</p>
+  } @else {
+    <div class="tabla-envoltura">
+      <table class="tabla">
+        <thead>
+          <tr><th>Código</th><th>Fecha</th><th>Cliente</th><th>Total</th><th>Pago</th><th>Estado</th></tr>
+        </thead>
+        <tbody>
+          @for (p of pg.content; track p.id) {
+            <tr class="fila-click" (click)="alternar(p)" [class.fila-abierta]="abierto() === p.id">
+              <td><button type="button" class="enlace" [attr.aria-expanded]="abierto() === p.id">{{ p.codigo }}</button></td>
+              <td>{{ p.fechaCreacion | date: 'dd/MM/yy HH:mm' }}</td>
+              <td>{{ p.nombreCliente }}<small class="bloque">{{ p.distrito }}</small></td>
+              <td>{{ p.total | soles }}</td>
+              <td>{{ metodos[p.metodoPago] }}</td>
+              <td><span class="chip" [attr.data-estado]="p.estado">{{ nombresEstado[p.estado] }}</span></td>
+            </tr>
+            @if (abierto() === p.id) {
+              <tr class="fila-detalle">
+                <td colspan="6">
+                  <div class="detalle-pedido">
+                    <div>
+                      <h3>Cliente</h3>
+                      <p>{{ p.nombreCliente }}<br />{{ p.documento.length === 11 ? 'RUC' : 'DNI' }} {{ p.documento }}<br />
+                        {{ p.telefono }}<br />{{ p.email }}<br />{{ p.direccion }}, {{ p.distrito }}</p>
+                      @if (p.notas) { <p><em>{{ p.notas }}</em></p> }
+                    </div>
+                    <div>
+                      <h3>Productos</h3>
+                      <ul class="resumen__items">
+                        @for (i of p.items; track i.productoId) {
+                          <li><span>{{ i.cantidad }} × {{ i.nombreProducto }}</span><span>{{ i.subtotal | soles }}</span></li>
+                        }
+                      </ul>
+                      <p>Op. gravada {{ p.subtotal | soles }}, IGV {{ p.igv | soles }}, <strong>total {{ p.total | soles }}</strong></p>
+                      @if (p.reciboNumero) {
+                        <p>Recibo:
+                          @if (puedeVerRecibos) { <a [routerLink]="['/admin/recibos', p.reciboId]">{{ p.reciboNumero }}</a> }
+                          @else { {{ p.reciboNumero }} }
+                          @if (p.reciboEstado === 'ANULADO') { <span class="chip" data-estado="CANCELADO">Anulado</span> }
+                        </p>
+                      } @else {
+                        <p class="estado">El recibo se emite al confirmar el pago.</p>
+                      }
+                    </div>
+                    @if (puedeActualizar) {
+                    <form class="detalle-pedido__estado" (ngSubmit)="actualizar(p)">
+                      <h3>Actualizar</h3>
+                      <label class="campo">
+                        <span>Estado</span>
+                        <select name="estado" [(ngModel)]="nuevoEstado">
+                          @for (e of estadosEditables; track e[0]) { <option [value]="e[0]">{{ e[1] }}</option> }
+                        </select>
+                      </label>
+                      @if (!esOperario) {
+                      <label class="campo">
+                        <span>N° de operación / referencia</span>
+                        <input name="referencia" [(ngModel)]="referencia" placeholder="Para Yape o transferencia" />
+                      </label>
+                      }
+                      <button type="submit" class="boton boton--chico">Guardar estado</button>
+                    </form>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (pg.totalPages > 1) {
+      <nav class="paginacion" aria-label="Paginación">
+        <button type="button" class="boton boton--secundario boton--chico" [disabled]="pg.page === 0" (click)="cargar(pg.page - 1)">Anterior</button>
+        <span>Página {{ pg.page + 1 }} de {{ pg.totalPages }}</span>
+        <button type="button" class="boton boton--secundario boton--chico" [disabled]="pg.page + 1 >= pg.totalPages" (click)="cargar(pg.page + 1)">Siguiente</button>
+      </nav>
+    }
+  }
+} @else if (!error()) {
+  <p class="estado">Cargando…</p>
+}

@@ -1,0 +1,81 @@
+<div class="contenedor seccion confirmacion">
+  @if (pedido(); as p) {
+    @if (p.estado === 'PENDIENTE_PAGO') {
+      <h1>Pedido {{ p.codigo }} registrado</h1>
+    } @else {
+      <h1>Gracias por tu compra</h1>
+      <p class="confirmacion__codigo">Pedido {{ p.codigo }}: {{ estados[p.estado] }}</p>
+    }
+
+    @if (p.estado === 'PENDIENTE_PAGO') {
+      @switch (p.metodoPago) {
+        @case ('YAPE_PLIN') {
+          <div class="instrucciones">
+            <p>Plinea <strong>{{ p.total | soles }}</strong> al número <strong>{{ yape.numero }}</strong> ({{ yape.titular }}).</p>
+            <p>Luego envíanos la captura con tu código de pedido para confirmarlo.</p>
+            <a class="boton" [href]="enlaceVoucher()" target="_blank" rel="noopener">Enviar captura por WhatsApp</a>
+          </div>
+        }
+        @case ('TRANSFERENCIA') {
+          <div class="instrucciones">
+            <p>Transfiere <strong>{{ p.total | soles }}</strong> a:</p>
+            <dl class="ficha">
+              <dt>Banco</dt><dd>{{ banco.banco }}</dd>
+              <dt>Cuenta</dt><dd>{{ banco.numero }}</dd>
+              <dt>CCI</dt><dd>{{ banco.cci }}</dd>
+              <dt>Titular</dt><dd>{{ banco.titular }}</dd>
+            </dl>
+            <a class="boton" [href]="enlaceVoucher()" target="_blank" rel="noopener">Enviar constancia por WhatsApp</a>
+          </div>
+        }
+        @case ('TARJETA') {
+          <div class="instrucciones">
+            <p>El pago en línea no se completó. Puedes intentarlo otra vez con tarjeta o Yape.</p>
+            <button type="button" class="boton" (click)="pagar()" [disabled]="pagando()">
+              {{ pagando() ? 'Procesando…' : 'Pagar ' + (p.total | soles) }}
+            </button>
+          </div>
+        }
+      }
+    } @else {
+      <p>Te escribiremos al {{ p.telefono }} para coordinar la entrega en {{ p.distrito }}.</p>
+    }
+
+    @if (p.reciboNumero) {
+      <a class="boton boton--secundario recibo-enlace" [routerLink]="['/recibo', p.codigo]" [queryParams]="{ email: p.email }">
+        Ver recibo {{ p.reciboNumero }}
+      </a>
+    }
+
+    @if (error()) {
+      <div class="alerta alerta--error alerta--cerrable" role="alert">
+        <p>{{ error() }}</p>
+        <button type="button" class="alerta__cerrar" (click)="error.set(null)" aria-label="Cerrar mensaje">×</button>
+      </div>
+    }
+
+    <section class="resumen resumen--plano">
+      <h2>Detalle</h2>
+      <ul class="resumen__items">
+        @for (i of p.items; track i.productoId) {
+          <li><span>{{ i.cantidad }} × {{ i.nombreProducto }}</span><span>{{ i.subtotal | soles }}</span></li>
+        }
+      </ul>
+      <dl>
+        <dt>Op. gravada</dt><dd>{{ p.subtotal | soles }}</dd>
+        <dt>IGV (18%)</dt><dd>{{ p.igv | soles }}</dd>
+        <dt class="resumen__total">Total</dt><dd class="resumen__total">{{ p.total | soles }}</dd>
+      </dl>
+      <p class="nota">Forma de pago: {{ metodos[p.metodoPago] }}</p>
+    </section>
+
+    <a routerLink="/catalogo" class="enlace">Seguir comprando</a>
+  } @else if (error()) {
+    <div class="vacio">
+      <p>{{ error() }}</p>
+      <a routerLink="/" class="boton">Volver al inicio</a>
+    </div>
+  } @else {
+    <p class="estado">Cargando pedido…</p>
+  }
+</div>

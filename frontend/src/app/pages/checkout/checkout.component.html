@@ -1,0 +1,121 @@
+<div class="contenedor seccion">
+  <h1>Finalizar compra</h1>
+
+  @if (!hayItems()) {
+    <div class="vacio">
+      <p>No hay productos en tu carrito.</p>
+      <a routerLink="/catalogo" class="boton">Ir al catálogo</a>
+    </div>
+  } @else {
+    <div class="compra">
+      <form [formGroup]="form" (ngSubmit)="confirmar()" class="formulario" novalidate>
+        <fieldset [disabled]="!!pedidoPendiente()">
+          <legend>Tus datos</legend>
+          <label class="campo">
+            <span>Nombre completo o razón social</span>
+            <input formControlName="nombreCliente" autocomplete="name" />
+            @if (invalido('nombreCliente')) { <small class="error">Ingresa tu nombre.</small> }
+          </label>
+          <div class="campos-2">
+            <label class="campo">
+              <span>DNI o RUC</span>
+              <input formControlName="documento" inputmode="numeric" maxlength="11" />
+              @if (invalido('documento')) { <small class="error">DNI de 8 dígitos o RUC de 11.</small> }
+            </label>
+            <label class="campo">
+              <span>Celular</span>
+              <input formControlName="telefono" inputmode="tel" maxlength="9" autocomplete="tel-national" />
+              @if (invalido('telefono')) { <small class="error">Celular de 9 dígitos que empiece con 9.</small> }
+            </label>
+          </div>
+          <label class="campo">
+            <span>Correo electrónico</span>
+            <input formControlName="email" type="email" autocomplete="email" />
+            @if (invalido('email')) { <small class="error">Ingresa un correo válido.</small> }
+          </label>
+        </fieldset>
+
+        <fieldset [disabled]="!!pedidoPendiente()">
+          <legend>Entrega</legend>
+          <label class="campo">
+            <span>Dirección</span>
+            <input formControlName="direccion" autocomplete="street-address" />
+            @if (invalido('direccion')) { <small class="error">Ingresa la dirección de entrega.</small> }
+          </label>
+          <label class="campo">
+            <span>Distrito</span>
+            <input formControlName="distrito" placeholder="Ej. San Juan de Lurigancho" />
+            @if (invalido('distrito')) { <small class="error">Ingresa el distrito.</small> }
+          </label>
+          <label class="campo">
+            <span>Notas (opcional)</span>
+            <textarea formControlName="notas" rows="3" placeholder="Referencias, horario de entrega, medidas de corte…"></textarea>
+          </label>
+        </fieldset>
+
+        <fieldset [disabled]="!!pedidoPendiente()">
+          <legend>Forma de pago</legend>
+          @for (m of metodos; track m[0]) {
+            <label class="opcion opcion--caja opcion--pago">
+              <input type="radio" formControlName="metodoPago" [value]="m[0]" />
+              <span>
+                <strong>{{ m[1] }}</strong>
+                <small>{{ detalle[m[0]] }}</small>
+                @if (m[0] === 'TARJETA') {
+                  <span class="medios" aria-hidden="true">
+                    <span class="medio">Visa</span><span class="medio">Mastercard</span><span class="medio">Amex</span><span class="medio">Diners</span>
+                    @if (carrito.total() <= limiteYape) { <span class="medio medio--yape">Yape</span> }
+                  </span>
+                  @if (carrito.total() > limiteYape) {
+                    <small>Yape acepta pagos de hasta S/ 2,000; para este monto usa tarjeta.</small>
+                  }
+                }
+              </span>
+            </label>
+          }
+        </fieldset>
+
+        @if (culqi.modoPrueba && form.controls.metodoPago.value === 'TARJETA' && verAvisoPrueba()) {
+          <div class="alerta alerta--cerrable">
+            <p>Modo de prueba: se abrirá una ventana de pago simulada y no se cobrará dinero.</p>
+            <button type="button" class="alerta__cerrar" (click)="verAvisoPrueba.set(false)" aria-label="Cerrar aviso">×</button>
+          </div>
+        }
+        @if (error()) {
+          <div class="alerta alerta--error alerta--cerrable" role="alert">
+            <p>{{ error() }}</p>
+            <button type="button" class="alerta__cerrar" (click)="error.set(null)" aria-label="Cerrar mensaje">×</button>
+          </div>
+        }
+        @if (pedidoPendiente(); as p) {
+          @if (verAvisoPendiente() && !error()) {
+            <div class="alerta alerta--cerrable" role="status">
+              <p>Tu pedido <strong>{{ p.codigo }}</strong> quedó registrado. Completa el pago cuando quieras.</p>
+              <button type="button" class="alerta__cerrar" (click)="verAvisoPendiente.set(false)" aria-label="Cerrar aviso">×</button>
+            </div>
+          }
+        }
+
+        <button type="submit" class="boton boton--ancho" [disabled]="enviando()">
+          @if (enviando()) { Procesando… }
+          @else if (pedidoPendiente()) { Reintentar pago }
+          @else if (form.controls.metodoPago.value === 'TARJETA') { Pagar {{ carrito.total() | soles }} }
+          @else { Confirmar pedido }
+        </button>
+      </form>
+
+      <aside class="resumen">
+        <h2>Resumen</h2>
+        <ul class="resumen__items">
+          @for (i of carrito.items(); track i.productoId) {
+            <li><span>{{ i.cantidad }} × {{ i.nombre }}</span><span>{{ i.precio * i.cantidad | soles }}</span></li>
+          }
+        </ul>
+        <dl>
+          <dt class="resumen__total">Total</dt><dd class="resumen__total">{{ carrito.total() | soles }}</dd>
+        </dl>
+        <p class="nota">IGV incluido. El envío se coordina después de confirmar.</p>
+      </aside>
+    </div>
+  }
+</div>

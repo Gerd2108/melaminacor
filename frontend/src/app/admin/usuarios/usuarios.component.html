@@ -1,0 +1,62 @@
+<div class="admin__cabecera">
+  <h1>Usuarios del personal</h1>
+</div>
+
+<form [formGroup]="form" (ngSubmit)="guardar()" class="formulario formulario--admin" novalidate>
+  <fieldset>
+    <legend>{{ editando() ? 'Editar a ' + editando()!.nombre : 'Nuevo usuario' }}</legend>
+    <div class="campos-2">
+      <label class="campo">
+        <span>Nombre</span>
+        <input formControlName="nombre" placeholder="Ej. María Torres" />
+      </label>
+      <label class="campo">
+        <span>Correo (con el que inicia sesión)</span>
+        <input formControlName="email" type="email" placeholder="maria@melamincorp.pe" />
+      </label>
+    </div>
+    <div class="campos-2">
+      <label class="campo">
+        <span>Rol</span>
+        <select formControlName="rol">
+          @for (r of roles; track r[0]) { <option [value]="r[0]">{{ r[1].nombre }}</option> }
+        </select>
+        <small class="bloque">{{ nombresRol[form.controls.rol.value].descripcion }}</small>
+      </label>
+      <label class="campo">
+        <span>{{ editando() ? 'Nueva contraseña (déjala vacía para no cambiarla)' : 'Contraseña inicial' }}</span>
+        <input formControlName="password" type="password" autocomplete="new-password" placeholder="Mínimo 8 caracteres" />
+      </label>
+    </div>
+    @if (editando()) {
+      <label class="opcion"><input type="checkbox" formControlName="activo" /> Puede iniciar sesión</label>
+    }
+  </fieldset>
+
+  @if (error()) { <p class="alerta alerta--error" role="alert">{{ error() }}</p> }
+  @if (aviso()) { <p class="alerta alerta--ok" role="status">{{ aviso() }}</p> }
+
+  <div class="acciones">
+    <button type="submit" class="boton">{{ editando() ? 'Guardar cambios' : 'Crear usuario' }}</button>
+    @if (editando()) {
+      <button type="button" class="boton boton--secundario" (click)="cancelar()">Cancelar</button>
+    }
+  </div>
+</form>
+
+<div class="tabla-envoltura seccion-tabla">
+  <table class="tabla">
+    <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th></th></tr></thead>
+    <tbody>
+      @for (u of usuarios(); track u.id) {
+        <tr>
+          <td>{{ u.nombre }}@if (esUnoMismo(u)) {<small class="bloque">Tú</small>}</td>
+          <td>{{ u.email }}</td>
+          <td>{{ nombresRol[u.rol].nombre }}</td>
+          <td><span class="chip" [class.chip--apagado]="!u.activo">{{ u.activo ? 'Activo' : 'Desactivado' }}</span></td>
+          <td class="tabla__acciones"><button type="button" class="enlace" (click)="editar(u)">Editar</button></td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

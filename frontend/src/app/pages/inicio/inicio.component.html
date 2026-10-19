@@ -1,0 +1,69 @@
+<section class="hero">
+  <div class="contenedor hero__fila">
+    <div class="hero__texto">
+      <h1>Planchas de melamina cortadas y canteadas a tu medida.</h1>
+      <p class="hero__bajada">
+        Taller en Ate Vitarte. Te asesoramos, optimizamos el despiece para aprovechar cada plancha,
+        cortamos, canteamos y, si lo necesitas, instalamos en obra.
+      </p>
+      <div class="acciones">
+        <a routerLink="/catalogo" class="boton">Ver catálogo</a>
+        <a [href]="whatsapp.consultaGeneral()" target="_blank" rel="noopener" class="boton boton--secundario">Cotizar por WhatsApp</a>
+      </div>
+    </div>
+
+    <div class="muestrario" role="img" aria-label="Muestrario de acabados de melamina">
+      @for (a of acabados; track a.nombre; let i = $index) {
+        <div class="lamina {{ a.clase }}" [style.--i]="i">
+          <span class="lamina__nombre">{{ a.nombre }}</span>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<section class="contenedor seccion">
+  <div class="lineas">
+    @for (t of tipos; track t.valor) {
+      <a class="linea" [routerLink]="['/catalogo']" [queryParams]="{ tipo: t.valor }">
+        <h2 class="linea__nombre">{{ t.nombre }}</h2>
+        <p>{{ t.descripcion }}</p>
+        <span class="linea__ir">Ver {{ t.nombre.toLowerCase() }}</span>
+      </a>
+    }
+  </div>
+</section>
+
+@if (destacados()?.length) {
+  <section class="contenedor seccion">
+    <div class="seccion__cabecera">
+      <h2>Planchas y servicios destacados</h2>
+      <a routerLink="/catalogo" class="enlace">Ver todo</a>
+    </div>
+    <div class="grilla">
+      @for (p of destacados(); track p.id) {
+        <app-producto-card [producto]="p" />
+      }
+    </div>
+  </section>
+}
+
+<section class="proceso">
+  <div class="contenedor">
+    <div class="proceso__cabecera">
+      <h2>Cómo trabajamos tu pedido</h2>
+      <p>Del primer contacto a la entrega, en cinco pasos.</p>
+    </div>
+    <ol class="proceso__pasos">
+      @for (paso of pasos; track paso.titulo; let i = $index) {
+        <li class="paso">
+          <span class="paso__numero" aria-hidden="true">{{ i + 1 }}</span>
+          <div class="paso__cuerpo">
+            <h3 class="paso__titulo">{{ paso.titulo }}</h3>
+            <p class="paso__texto">{{ paso.texto }}</p>
+          </div>
+        </li>
+      }
+    </ol>
+  </div>
+</section>

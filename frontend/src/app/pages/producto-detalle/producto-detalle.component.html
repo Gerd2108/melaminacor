@@ -1,0 +1,80 @@
+<div class="contenedor seccion">
+  @if (producto(); as p) {
+    <nav class="migas" aria-label="Ruta">
+      <a routerLink="/catalogo">Catálogo</a> /
+      <a [routerLink]="['/catalogo']" [queryParams]="{ tipo: p.tipo }">{{ nombreTipo(p) }}</a>
+      @if (p.categoriaNombre) {
+        / <a [routerLink]="['/catalogo']" [queryParams]="{ tipo: p.tipo, categoriaId: p.categoriaId }">{{ p.categoriaNombre }}</a>
+      }
+    </nav>
+
+    <article class="detalle">
+      <div class="detalle__imagen">
+        @if (p.imagenUrl | imagen; as src) {
+          <img [src]="src" [alt]="p.nombre" />
+        } @else {
+          <div class="sin-imagen" [attr.data-tipo]="p.tipo" aria-hidden="true"></div>
+        }
+      </div>
+
+      <div class="detalle__info">
+        <h1>{{ p.nombre }}</h1>
+        @if (p.sku) { <p class="detalle__sku">Código {{ p.sku }}</p> }
+
+        <div class="detalle__precio">
+          @if (p.precioVigente === 0) {
+            <span>Sin costo con tu compra</span>
+          } @else if (p.soloCotizacion) {
+            <span>Desde {{ p.precioVigente | soles }}@if (p.medidas) {<small class="precio__unidad"> {{ p.medidas.toLowerCase() }}</small>}</span>
+          } @else {
+            <span>{{ p.precioVigente | soles }}</span>
+            @if (p.precioOferta) { <s>{{ p.precio | soles }}</s> }
+          }
+        </div>
+
+        @if (p.medidas || p.color || p.espesor) {
+          <dl class="ficha">
+            @if (p.medidas) { <dt>{{ p.tipo === 'SERVICIO' ? 'Unidad' : 'Medidas' }}</dt><dd>{{ p.medidas }}</dd> }
+            @if (p.color) { <dt>Color</dt><dd>{{ p.color }}</dd> }
+            @if (p.espesor) { <dt>Espesor</dt><dd>{{ p.espesor }}</dd> }
+          </dl>
+        }
+
+        @if (p.descripcion) { <p class="detalle__descripcion">{{ p.descripcion }}</p> }
+
+        @if (p.soloCotizacion) {
+          <p class="alerta">Este servicio se cotiza según tu proyecto. Envíanos tu lista de piezas o tus medidas y te pasamos el precio final.</p>
+        } @else if (p.stock > 0) {
+          <div class="comprar">
+            <div class="cantidad" role="group" aria-label="Cantidad">
+              <button type="button" (click)="cambiarCantidad(-1, p.stock)" aria-label="Quitar uno">−</button>
+              <span aria-live="polite">{{ cantidad() }}</span>
+              <button type="button" (click)="cambiarCantidad(1, p.stock)" aria-label="Agregar uno">+</button>
+            </div>
+            <button type="button" class="boton" (click)="agregar(p)">Agregar al carrito</button>
+          </div>
+          <p class="detalle__stock">{{ p.stock }} disponibles</p>
+          @if (agregado()) {
+            <p class="alerta alerta--ok" role="status">
+              Agregado al carrito. <a routerLink="/carrito">Ir al carrito</a>
+            </p>
+          }
+        } @else {
+          <p class="alerta">Sin stock por ahora. Pregúntanos por la fecha de reposición.</p>
+        }
+
+        <a class="boton boton--secundario boton--ancho" [href]="whatsapp.cotizarProducto(p)" target="_blank" rel="noopener">
+          Cotizar por WhatsApp
+        </a>
+      </div>
+    </article>
+  } @else if (noEncontrado()) {
+    <div class="vacio">
+      <h1>Producto no encontrado</h1>
+      <p>Puede que ya no esté disponible.</p>
+      <a routerLink="/catalogo" class="boton">Ver catálogo</a>
+    </div>
+  } @else {
+    <p class="estado">Cargando producto…</p>
+  }
+</div>
