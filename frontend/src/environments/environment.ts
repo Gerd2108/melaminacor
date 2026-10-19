@@ -11,5 +11,8 @@ export const environment = {
   // Datos para pagos manuales (se muestran al cliente)
   yapePlin: { numero: '999 999 999', titular: 'Melamincorp S.A.C.' },
   cuentaBancaria: { banco: 'BCP', numero: '000-0000000-0-00', cci: '00200000000000000000', titular: 'Melamincorp S.A.C.' },
-  // Llave pública de Culqi; mientras diga REEMPLAZAR se usa el pago de prueba  
+  // Llave pública de Culqi; mientras diga REEMPLAZAR se usa el pago de prueba
+  culqiPublicKey: 'pk_test_REEMPLAZAR',
+
+//221|2
 };
