@@ -1,0 +1,50 @@
+# Despliegue en Render (https://render.com) con Blueprint.
+# Base de datos: PostgreSQL en Neon (https://neon.com), plan gratuito.
+# Si Render no puede usar estos nombres (ya existen), te asignará otra URL:
+# en ese caso actualiza API_URL (web) y CORS_ORIGINS (api) en el panel de Render.
+services:
+  # ---------- Backend: Spring Boot (Docker) ----------
+  - type: web
+    name: melamincorp-api
+    runtime: docker
+    plan: free
+    region: virginia
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /api/public/categorias
+    envVars:
+      # Conexión a Neon en formato JDBC, ej.:
+      # jdbc:postgresql://ep-xxxx.us-east-1.aws.neon.tech/neondb?sslmode=require
+      - key: DB_URL
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_POOL
+        value: "3"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: CORS_ORIGINS
+        value: https://melamincorp-web.onrender.com
+      - key: PAGOS_SIMULADOS
+        value: "true"
+
+  # ---------- Frontend: Angular (sitio estático) ----------
+  - type: web
+    name: melamincorp-web
+    runtime: static
+    buildCommand: cd frontend && sed -i "s#__API_URL__#${API_URL}#g" src/environments/environment.ts && npm ci && npm run build
+    staticPublishPath: frontend/dist/frontend/browser
+    routes:
+      # Angular maneja las rutas (/catalogo, /admin...): todo va a index.html
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: API_URL
+        value: https://melamincorp-api.onrender.com
+      - key: NODE_VERSION
+        value: "22"
