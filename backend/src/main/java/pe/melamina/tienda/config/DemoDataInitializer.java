@@ -140,7 +140,10 @@ public class DemoDataInitializer implements CommandLineRunner {
         crearUsuariosDemo();
         int creados = 0;
         for (Demo d : PRODUCTOS) {
-            if (productoRepository.existsBySkuIgnoreCase(d.sku())) continue;
+            if (productoRepository.existsBySkuIgnoreCase(d.sku())) {
+                copiarImagen(d.imagen()); // asegura que la foto exista en la base (no duplica)
+                continue;
+            }
 
             Producto p = new Producto();
             p.setSku(d.sku());

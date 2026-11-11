@@ -1,11 +1,15 @@
 server:
-  port: 8080
+  # Render asigna el puerto en la variable PORT; en tu PC se usa 8080
+  port: ${PORT:8080}
 
 spring:
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/melamina}
     username: ${DB_USER:melamina}
     password: ${DB_PASSWORD:melamina}
+    hikari:
+      # Pocas conexiones: los planes gratuitos de Postgres limitan cuántas hay
+      maximum-pool-size: ${DB_POOL:5}
   jpa:
     # "update" es cómodo en desarrollo. En producción usa "validate" + Flyway.
     hibernate:

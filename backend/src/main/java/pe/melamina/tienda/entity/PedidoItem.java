@@ -20,7 +20,7 @@ public class PedidoItem {
     @JoinColumn(name = "producto_id")
     private Producto producto;
 
-    
+    // Copiamos nombre y precio: si luego cambia el producto, el pedido no se altera.
     @Column(nullable = false, length = 150)
     private String nombreProducto;
     @Column(nullable = false, precision = 10, scale = 2)

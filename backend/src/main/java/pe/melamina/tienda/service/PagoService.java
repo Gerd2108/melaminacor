@@ -18,7 +18,12 @@ import pe.melamina.tienda.exception.NegocioException;
 import java.math.BigDecimal;
 import java.util.Map;
 
-
+/**
+ * Cobro en línea mediante Culqi (tarjeta o Yape).
+ * Flujo: el frontend abre el Checkout Custom de Culqi -> obtiene un token (de tarjeta o de Yape)
+ * -> lo envía aquí -> creamos el cargo con la llave secreta. Ambos tokens se cobran igual.
+ * Revisa la documentación vigente de Culqi (docs.culqi.com) antes de pasar a producción.
+ */
 @Service
 public class PagoService {
 
@@ -53,6 +58,7 @@ public class PagoService {
 
         pedidoService.verificarStock(pedido);
 
+        // Pago de prueba (sin Culqi): solo si está permitido en application.yml
         if (req.token().startsWith("sim_")) {
             if (!simuladoPermitido) {
                 throw new NegocioException("Los pagos de prueba están desactivados en este servidor");
@@ -63,6 +69,7 @@ public class PagoService {
             return PedidoDto.Response.from(pedido);
         }
 
+        // Culqi trabaja en céntimos: S/ 125.50 -> 12550
         long centimos = pedido.getTotal().multiply(BigDecimal.valueOf(100)).longValueExact();
 
         Map<String, Object> cuerpo = Map.of(
@@ -101,7 +108,7 @@ public class PagoService {
             Map<String, Object> err = e.getResponseBodyAs(Map.class);
             if (err != null && err.get("user_message") != null) return err.get("user_message").toString();
         } catch (Exception ignored) {
-            
+            // cuerpo no legible: usamos el mensaje por defecto
         }
         return "El pago fue rechazado. Verifica tus datos o intenta con otro medio de pago.";
     }

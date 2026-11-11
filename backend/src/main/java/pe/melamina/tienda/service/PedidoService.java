@@ -21,7 +21,7 @@ import java.util.Set;
 public class PedidoService {
 
     private static final BigDecimal FACTOR_IGV = new BigDecimal("1.18");
-    private static final String ALFABETO = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; 
+    private static final String ALFABETO = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // sin 0/O, 1/I
     private static final SecureRandom RANDOM = new SecureRandom();
     /** Estados en los que el pedido ya está pagado y el stock debe estar descontado. */
     private static final Set<EstadoPedido> ESTADOS_PAGADOS =

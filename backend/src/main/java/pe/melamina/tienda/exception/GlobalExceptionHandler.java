@@ -16,6 +16,8 @@ import java.util.Map;
 
 /**
  * Convierte excepciones en JSON con formato ProblemDetail (RFC 7807).
+ * Extiende ResponseEntityExceptionHandler para que Spring siga resolviendo bien
+ * sus propios errores (404 de rutas, JSON mal formado, método no permitido...).
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {

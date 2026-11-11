@@ -45,13 +45,13 @@ public class Producto {
 
     // Atributos típicos de melamina (todos opcionales)
     @Column(length = 80)
-    private String medidas;     
+    private String medidas;     // ej. "2.44 x 2.14 m" o "Ø 25 cm"
 
     @Column(length = 60)
-    private String color;       
+    private String color;       // ej. "Roble Santana", "Blanco"
 
     @Column(length = 30)
-    private String espesor;    
+    private String espesor;     // ej. "18 mm"
 
     private String imagenUrl;
 
